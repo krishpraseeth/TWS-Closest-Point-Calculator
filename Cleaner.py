@@ -47,6 +47,13 @@ def readCSV(filePath):
     fileName = open(filePath, 'r')
     
     file = csv.DictReader(fileName)
+    required_fields = ['Lat', 'Lon', 'WiFi Channel']
+        
+        # Check if required fields are present
+    if not all(field in file.fieldnames for field in required_fields):
+        missing_fields = [field for field in required_fields if field not in file.fieldnames]
+        messagebox.showerror("Missing Fields", f"The following required fields are missing: {', '.join(missing_fields)}")
+        return None, None, None, None
 
     lat = []
     lon = []
@@ -79,7 +86,8 @@ def importCSV():
     if filePath:
         global lat, lon, wifiChannel, topThree
         lat, lon, wifiChannel, topThree = readCSV(filePath)
-        messagebox.showinfo("Import Successful", "CSV file imported successfully!")
+        if(lat and lon and wifiChannel):
+            messagebox.showinfo("Import Successful", "CSV file imported successfully!")
 
 def runCalculation():
     global lat, lon, wifiChannel, topThree
