@@ -1,7 +1,7 @@
 import csv
 from math import *
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, ttk
 
 #Uses the haversine formula to calculate the distance between two points
 def haversine(lat1, lat2, lon1, lon2):
@@ -54,13 +54,27 @@ def readCSV(filePath):
         missing_fields = [field for field in required_fields if field not in file.fieldnames]
         messagebox.showerror("Missing Fields", f"The following required fields are missing: {', '.join(missing_fields)}")
         return None, None, None, None
-
     lat = []
     lon = []
     wifiChannel = []
     topThree = {}  
 
     for col in file:
+        try:
+            latitude = float(col['Lat'])
+            longitude = float(col['Lon'])
+            if not (-90 <= latitude <= 90 and -180 <= longitude <= 180):
+                raise ValueError
+        except ValueError:
+            raise ValueError(f"Invalid latitude or longitude value: {col['Lat']}, {col['Lon']}")
+        
+        wifi_channel = col['WiFi Channel']
+        if wifi_channel != '#N/A':
+            try:
+                wifi_channel = int(wifi_channel)
+            except ValueError:
+                raise ValueError(f"WiFi Channel must be a number or '#N/A': {wifi_channel}")
+        
         lat.append(col['Lat'])
         lon.append(col['Lon'])
         wifiChannel.append(col['WiFi Channel'])
@@ -82,30 +96,55 @@ def writeCSV(dict):
             writer.writerow(row)
 
 def importCSV():
-    filePath = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
-    if filePath:
-        global lat, lon, wifiChannel, topThree
-        lat, lon, wifiChannel, topThree = readCSV(filePath)
-        if(lat and lon and wifiChannel):
-            messagebox.showinfo("Import Successful", "CSV file imported successfully!")
+    file_path = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
+    if file_path:
+        try:
+            global lat, lon, wifiChannel, topThree
+            lat, lon, wifiChannel, topThree = readCSV(file_path)
+            if(lat and lon and wifiChannel):
+                file_label.config(text=f"File: {file_path}")
+                messagebox.showinfo("Import Successful", "CSV file imported successfully!")
+        except ValueError as e:
+            messagebox.showerror("Error", str(e))
 
 def runCalculation():
     global lat, lon, wifiChannel, topThree
-    calculateClosestPoints(lat, lon, wifiChannel, topThree)
-    writeCSV(topThree)
-    printDict(topThree)
-    messagebox.showinfo("Calculation Complete", "Closest points calculated and saved to ClosestPoints.csv!")
+    try:
+        calculateClosestPoints(lat, lon, wifiChannel, topThree)
+        writeCSV(topThree)
+    # printDict(topThree)
+    except:
+        messagebox.showerror("Calculation Error", "Please input valid data")
+    else:
+        messagebox.showinfo("Calculation Complete", "Closest points calculated and saved to ClosestPoints.csv!")
 
 # GUI setup
 root = tk.Tk()
 root.title("CSV Processing GUI")
+root.configure(bg='#5083a0')
 
-import_btn = tk.Button(root, text="Import CSV", command=importCSV)
-import_btn.pack(pady=10)
+# Load image
+img = tk.PhotoImage(file="logo.png")
 
-calc_btn = tk.Button(root, text="Calculate Closest Points", command=runCalculation)
-calc_btn.pack(pady=10)
+# Style
+style = ttk.Style()
+style.configure('TButton', font=('Arial', 12), padding=10)
+style.configure('TLabel', font=('Arial', 12), foreground='blue')
+
+img_label = ttk.Label(root, image=img, background='#5083a0')
+img_label.pack(pady=10)
+
+frame = ttk.Frame(root, padding="20", style='TFrame')
+frame.pack(padx=10, pady=10, fill='x', expand=True)
+
+import_btn = ttk.Button(frame, text="Import CSV", command=importCSV, style='TButton')
+import_btn.pack(pady=10, fill='x')
+
+file_label = ttk.Label(frame, text="No file selected", style='TLabel')
+file_label.pack(padx = 50, pady=10, fill='x')
+
+calc_btn = ttk.Button(frame, text="Calculate Closest Points", command=runCalculation, style='TButton')
+calc_btn.pack(pady=10, fill='x')
 
 root.mainloop()
-
 
