@@ -95,6 +95,7 @@ def writeCSV(dict):
                 row.extend([item[0], item[1], item[2], item[3]])
             writer.writerow(row)
 
+
 def importCSV():
     file_path = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
     if file_path:
@@ -118,33 +119,4 @@ def runCalculation():
     else:
         messagebox.showinfo("Calculation Complete", "Closest points calculated and saved to ClosestPoints.csv!")
 
-# GUI setup
-root = tk.Tk()
-root.title("CSV Processing GUI")
-root.configure(bg='#5083a0')
-
-# Load image
-img = tk.PhotoImage(file="logo.png")
-
-# Style
-style = ttk.Style()
-style.configure('TButton', font=('Arial', 12), padding=10)
-style.configure('TLabel', font=('Arial', 12), foreground='blue')
-
-img_label = ttk.Label(root, image=img, background='#5083a0')
-img_label.pack(pady=10)
-
-frame = ttk.Frame(root, padding="20", style='TFrame')
-frame.pack(padx=10, pady=10, fill='x', expand=True)
-
-import_btn = ttk.Button(frame, text="Import CSV", command=importCSV, style='TButton')
-import_btn.pack(pady=10, fill='x')
-
-file_label = ttk.Label(frame, text="No file selected", style='TLabel')
-file_label.pack(padx = 50, pady=10, fill='x')
-
-calc_btn = ttk.Button(frame, text="Calculate Closest Points", command=runCalculation, style='TButton')
-calc_btn.pack(pady=10, fill='x')
-
-root.mainloop()
 
